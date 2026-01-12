@@ -1,5 +1,4 @@
 import matplotlib.cm as cm
-import matplotlib.colors as mcolors
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -118,3 +117,4 @@ ax2.grid(axis='x', linestyle='--', alpha=0.5)
 plt.tight_layout(pad=2)
 plt.savefig("heatmap.png", dpi=600, bbox_inches='tight', pad_inches=0.1)
 st.pyplot(fig)
+
