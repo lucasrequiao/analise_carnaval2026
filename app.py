@@ -118,3 +118,81 @@ plt.tight_layout(pad=2)
 plt.savefig("heatmap.png", dpi=600, bbox_inches='tight', pad_inches=0.1)
 st.pyplot(fig)
 
+#Visualizar os dados dos eventos em df mas com os filtros de data e cpr aplicados   
+st.subheader("Dados dos Eventos")
+
+# Filtrar eventos
+df_filtered = df[(df["inicio_data"] == selected_data) & (df["cpr"] == selected_cpr)]
+
+# Verificar se há eventos
+if len(df_filtered) == 0:
+    st.info("Nenhum evento encontrado para os filtros selecionados.")
+else:
+    # ------------------------------
+    # Métricas de Resumo
+    # ------------------------------
+    total_eventos = len(df_filtered)
+    publico_total = df_filtered["publico_previsto"].sum()
+    horario_inicio_min = df_filtered["inicio_horario"].min()
+    horario_fim_max = df_filtered["fim_horario"].max()
+    
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("📊 Total de Eventos", total_eventos)
+    with col2:
+        st.metric("👥 Público Total Previsto", f"{publico_total:,}".replace(',', '.'))
+    with col3:
+        st.metric("⏰ Primeiro Evento", horario_inicio_min.strftime("%H:%M"))
+    with col4:
+        st.metric("🏁 Último Evento", horario_fim_max.strftime("%H:%M"))
+    
+    st.divider()
+    
+    # ------------------------------
+    # Cards Expansíveis
+    # ------------------------------
+    for idx, evento in df_filtered.iterrows():
+        # Cabeçalho do card
+        inicio_str = evento["inicio_horario"].strftime("%H:%M")
+        fim_str = evento["fim_horario"].strftime("%H:%M")
+        publico = evento["publico_previsto"]
+        
+        # Criar título do expander
+        titulo = f"🎉 {evento['evento']} | {inicio_str} → {fim_str} | 👥 {publico:,}".replace(',', '.') + " pessoas"
+        
+        with st.expander(titulo):
+            col_a, col_b = st.columns(2)
+            
+            with col_a:
+                st.markdown("### 📅 Informações de Data e Hora")
+                st.write(f"**Data de Início:** {evento['inicio_data'].strftime('%d/%m/%Y')}")
+                st.write(f"**Horário de Início:** {inicio_str}")
+                st.write(f"**Data de Fim:** {evento['fim_data'].strftime('%d/%m/%Y')}")
+                st.write(f"**Horário de Fim:** {fim_str}")
+                
+            with col_b:
+                st.markdown("### 📍 Informações do Evento")
+                st.write(f"**CPR:** {evento['cpr']}")
+                st.write(f"**Público Previsto:** {publico:,}".replace(',', '.') + " pessoas")
+                
+                # Exibir outras colunas que possam existir no dataframe
+                colunas_padrao = ['inicio', 'fim', 'inicio_data', 'inicio_horario', 
+                                  'fim_data', 'fim_horario', 'inicio_datetime', 
+                                  'fim_datetime', 'cpr', 'publico_previsto']
+                colunas_extras = [col for col in df_filtered.columns if col not in colunas_padrao]
+                
+                if colunas_extras:
+                    st.markdown("### ℹ️ Informações Adicionais")
+                    for col in colunas_extras:
+                        st.write(f"**{col.capitalize()}:** {evento[col]}")
+    
+    st.divider()
+    
+    # ------------------------------
+    # Opção de Ver Tabela Completa
+    # ------------------------------
+    if st.checkbox("📋 Ver tabela completa", value=False):
+        st.dataframe(df_filtered, use_container_width=True)
+
+
+
